@@ -1,0 +1,8 @@
+one variation to the standard caesar cipher is when the alphabet is "keyed" by using a word. 
+in the traditional variety, one could write the alphabet on two strips and just match up the 
+strips after sliding the bottom strip to the left or right. to encode, you would find a letter 
+in the top row and substitute it for the letter in the bottom row. for a keyed version, one would 
+not use a standard alphabet, but would first write a word (omitting duplicated letters) and then 
+write the remaining letters of the alphabet. for the example below, i used a key of "rumkin.com" 
+and you will see that the period is removed because it is not a letter. you will also notice the 
+second "m" is not included because there was an m already and you can't have duplicates.

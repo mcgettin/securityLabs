@@ -1,5 +1,4 @@
 
-
 fPtr=open('sampLab.txt','r')
 dict={'a':0}
 for file in fPtr:

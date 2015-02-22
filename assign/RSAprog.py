@@ -1,3 +1,7 @@
+import random
+import math
+import sys
+
 '''
     for getting the gcd and quotiants of a and b via extended gcd method
 '''
@@ -20,6 +24,9 @@ def modinv(e, m):
     return x % m # x is e^-1 from extended gcd , so x mod m = d (what we want)
  
 
+'''
+    get the gcd of a and b
+'''
 def gcd(a,b):
     while b is not 0: 
        tmp = b
@@ -27,32 +34,56 @@ def gcd(a,b):
        a = tmp
     return a
 
-def isprime(n):
-# make sure n is a positive integer
-    n = abs(int(n))
-# 0 and 1 are not primes
-    if n < 2:
+'''
+#used in isprime
+'''
+def _try_composite(a, d, n, s):
+    if pow(a, d, n) == 1:
         return False
-# 2 is the only even prime number
-    if n == 2:
-        return True
-# all other even numbers are not primes
-    if not n & 1:
-        return False
-# range starts with 3 and only needs to go up the squareroot of n
-# for all odd numbers
-    for x in range(3, int(n**0.5)+1, 2):
-        if n % x == 0:
+    for i in range(s):
+        if pow(a, 2**i * d, n) == n-1:
             return False
-    return True
+    return True # n  is definitely composite
 
+'''
+ #uses Miller-Rabin_primality_test, since other methods for generating
+ #128-bit(40-digit) primes and testing them take ludicrous amounts of time
+'''
+def isprime(n, _precision_for_huge_n=16):
+    if n in _known_primes or n in (0, 1):
+        return True
+    if any((n % p) == 0 for p in _known_primes):
+        return False
+    d, s = n - 1, 0
+    while not d % 2:
+        d, s = d >> 1, s + 1
+    # Returns exact according to http://primes.utm.edu/prove/prove2_3.html
+    if n < 1373653: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3))
+    if n < 25326001: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5))
+    if n < 118670087467: 
+        if n == 3215031751: 
+            return False
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7))
+    if n < 2152302898747: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11))
+    if n < 3474749660383: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11, 13))
+    if n < 341550071728321: 
+        return not any(_try_composite(a, d, n, s) for a in (2, 3, 5, 7, 11, 13, 17))
+    # otherwise
+    return not any(_try_composite(a, d, n, s) 
+                   for a in _known_primes[:_precision_for_huge_n])
 
-import random
+ #for use with isprime for faster checking
+_known_primes = [2, 3]
+_known_primes += [x for x in range(5, 1000, 2) if isprime(x)]
 
-bits=55
 ### GENERATE  p,q ###
-p=0
-q=0
+p=4
+q=4
+bits=128
 
 while not isprime(p):
     p=random.getrandbits(bits)
@@ -60,7 +91,6 @@ print("p: "+str(p))
 
 while not isprime(q):
     q=random.getrandbits(bits)
-
 print("q: "+str(q))
 
 ### Calc n= p*q ###

@@ -3,6 +3,51 @@ import math
 import sys
 
 '''
+    for generating Encryption variable 'e' for public key
+'''
+def genPublic(y):
+    e=2**16 #small values for e does not affect security of RSA
+    while gcd(e,y)!=1:
+        e+=1
+    return e
+
+
+'''
+for generating a prime number of desired bit length
+'''
+def genPrime(bits):
+    p=4
+    while not isprime(p):
+        p=random.getrandbits(bits)
+    return p
+
+
+'''
+    for using the public key to encrypt a plaintext message
+'''
+def encryptText(e,n,msg):
+    cipher=""
+    for ch in msg:
+        ch=int(ord(ch))
+        ch=pow(ch,e,n)
+        cipher+=str(ch)+" "
+    return cipher
+
+
+'''
+    for using private key to decrypt cipher into plaintext
+'''
+def decryptText(d,n,msg):
+    plain=""
+    for line in msg.split(" "):
+        if len(line) < 1: break
+        line=pow(int(line),d,n)
+        line=chr(line)
+        plain+=line
+    return plain
+
+
+'''
     for getting the gcd and quotiants of a and b via extended gcd method
 '''
 def extended_gcd(a, b):
@@ -13,6 +58,7 @@ def extended_gcd(a, b):
         x, lastx = lastx - quotient*x, x
         y, lasty = lasty - quotient*y, y
     return lastremainder, lastx * (-1 if a < 0 else 1), lasty * (-1 if b < 0 else 1)
+
 
 '''
     uses the extended gcd to find the mod inverse given a number e and a mod m 
@@ -34,6 +80,7 @@ def gcd(a,b):
        a = tmp
     return a
 
+
 '''
 #used in isprime
 '''
@@ -45,9 +92,10 @@ def _try_composite(a, d, n, s):
             return False
     return True # n  is definitely composite
 
+
 '''
  #uses Miller-Rabin_primality_test, since other methods for generating
- #128-bit(40-digit) primes and testing them take ludicrous amounts of time
+ #large primes and testing them take ludicrous amounts of time
 '''
 def isprime(n, _precision_for_huge_n=16):
     if n in _known_primes or n in (0, 1):
@@ -76,41 +124,41 @@ def isprime(n, _precision_for_huge_n=16):
     return not any(_try_composite(a, d, n, s) 
                    for a in _known_primes[:_precision_for_huge_n])
 
- #for use with isprime for faster checking
+
+#for use with isprime for faster checking    
 _known_primes = [2, 3]
 _known_primes += [x for x in range(5, 1000, 2) if isprime(x)]
-
+    
 ### GENERATE  p,q ###
-p=4
-q=4
-bits=128
+p=genPrime(128) #prime parameter for num of bits wanted
+q=genPrime(128)
 
-while not isprime(p):
-    p=random.getrandbits(bits)
-print("p: "+str(p))
+print("p: {}\n\nq: {}".format(p,q))
 
-while not isprime(q):
-    q=random.getrandbits(bits)
-print("q: "+str(q))
+message=input("\nPlease Enter message to decrypt: ")
 
 ### Calc n= p*q ###
 n=p*q
-print("n: "+str(n))
+print("\nn: "+str(n))
 
 ### Calc y= (p-1)(q-1) ###
 y=(p-1)*(q-1)
-print("y: "+str(y))
+print("\ny: "+str(y))
 
 ### Generate e (gcd(e,y)=1) ###
-e=2**bits #small values for e does not affect security of RSA
-while gcd(e,y)!=1:
-    e+=1
-print("e: "+str(e))
+e=genPublic(y)
+print("\ne: "+str(e))
 
 ### Generate d (de=1 mod (y)) ###
 d = modinv(e,y)
-print("d: "+str(d))
+print("\nd: "+str(d))
 
-print("\nPublic Key (n,e): ({}, {})".format(n,e))
-print("Private Key (n,d): ({}, {})".format(n,d))
 
+print("\nPublic Key (n,e):  ({}, {})\n".format(n,e))
+print("Private Key (n,d): ({}, {})\n".format(n,d))
+
+cipher=encryptText(e,n,message)
+print("Encrypted: {}".format(cipher))
+
+uncipher=decryptText(d,n,cipher)
+print("\nDecrypted: {}".format(uncipher))
